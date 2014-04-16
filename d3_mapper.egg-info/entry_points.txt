@@ -1,3 +1,0 @@
-      [paste.app_factory]
-      main = d3_mapper:main
-      
