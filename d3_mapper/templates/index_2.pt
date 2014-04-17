@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!--
+    This program is a good representation of adding divs with data to svg objects
+    Features:
+    * Hovering to display div
+    * 
+-->
+<style>
+
+.bg {
+    background-color: aliceblue;
+}
+
+.axis path, .axis line {
+    fill: none;
+    stroke: black;
+    stroke-width: 2px;
+    shape-rendering: crispEdges;
+}
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+text { 
+    font-family: Verdana, Arial;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.dataCircle { 
+     stroke: steelblue;
+     fill: lightblue;
+}
+
+.dataCircleSelected{
+    stroke: steelblue;
+    fill: springgreen;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: left;
+    padding: 8px;
+    font: 10px Verdana;
+    background: lightsteelblue;
+    border: px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+</style>
+<body>
+<div id="main"></div>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var dataset = 
+[   [2910160,"MIXWL_FRAUD_REP1",1,11943,1193893,2,1361995595324,1361995655389,10.436,8081,7.436544E7,1.2914243,0.5976801,0.8510519,3.6,0.77433884,60065,252,1361995715585], [2910160,"MIXWL_FRAUD_REP1",1,11940,1193875,2,1361995474388,1361995535210,14.724,8705,8.1096704E7,1.6914417,0.44410568,0.846015,8.208,0.5912116,60822,252,1361995595324],   [2910160,"MIXWL_FRAUD_REP1",1,11913,1193732,2,1361994132487,1361994197038,12.62,10719,3933184,1.1773486,0.5486968,0.8367741,4.104,0.84936607,64551,252,1361994258673],  [2910160,"MIXWL_FRAUD_REP1",1,12090,1194831,2,1362004652635,1362004712761,14.468,8708,9.0960896E7,1.6614608,0.42621526,0.7813239,2.592,0.60188,60126,252,1362004773543],    [2910160,"MIXWL_FRAUD_REP1",1,10974,1187777,4,1361934623085,1361934806234,17.212,9641,1.1102464E8,1.785292,0.40321636,0.7644635,4.68,0.56013244,183149,252,1361934873232],  [2910160,"MIXWL_FRAUD_REP1",1,11970,1194054,2,1361997122985,1361997189535,10.948,7073,6.6531328E7,1.547858,0.45504665,0.8466933,5.256,0.6460541,66550,252,1361997249673],   [2910160,"MIXWL_FRAUD_REP1",1,12129,1195094,2,1362007103519,1362007163679,13.832,9038,8.61952E7,1.5304271,0.41562238,0.7688127,4.968,0.6534124,60160,252,1362007225200],    [2910160,"MIXWL_FRAUD_REP1",1,11190,1189171,3,1361948809733,1361948929841,18.4,9612,8.2976768E7,1.9142739,0.46249294,0.8156685,6.408,0.5223913,120108,252,1361948990265],   [2910083,"MIXWL_FRAUD_REP2",1,11127,1189015,3,1361947228407,1361947348595,19.024,10408,8.2377728E7,1.8278247,0.30243903,0.76401824,6.192,0.5470984,120188,252,1361947410344],   [2910083,"MIXWL_FRAUD_REP2",1,11439,1191001,3,1361967020224,1361967140995,15.372,8452,1.01644288E8,1.8187411,0.33621684,0.7641596,13.248,0.54983085,120771,252,1361967202137],  [2910083,"MIXWL_FRAUD_REP2",1,11715,1192665,3,1361983829703,1361983950055,19.356,8992,1.27374336E8,2.15258,0.32216012,0.771262,7.344,0.46455878,120352,252,1361984012881],  [2910083,"MIXWL_FRAUD_REP2",1,10827,1187081,2,1361927729893,1361927789951,11.884,8319,7.5615232E7,1.4285371,0.52001196,0.7929832,8.64,0.70001686,60058,252,1361927850005],  [2910083,"MIXWL_FRAUD_REP2",1,12084,1195076,4,1362006922742,1362007103519,23.448,10144,1.52863744E8,2.3115141,0.5644841,0.7355135,6.552,0.43261686,180777,252,1362007163679],   [2910094,"MIXWL_FRAUD_REP3",1,10950,1188031,4,1361937205560,1361937400831,38.876,120805,4.2145792E7,0.32180786,0.60739505,0.76561594,9.144,3.1074443,195271,252,1361937461221], [2910094,"MIXWL_FRAUD_REP3",1,10797,1187043,3,1361927360143,1361927480860,19.624,10146,8.592128E7,1.9341612,0.44290122,0.7065933,5.832,0.51702,120717,252,1361927545533],   [2910094,"MIXWL_FRAUD_REP3",1,11721,1192930,2,1361986414723,1361986480327,16.092,10256,1.20193536E8,1.5690328,0.46319446,0.7035938,3.672,0.6373353,65604,252,1361986540682],    [2910094,"MIXWL_FRAUD_REP3",1,11787,1193390,2,1361990779460,1361990839668,15.26,8364,9.176064E7,1.8244859,0.55516154,0.844373,5.4,0.5480996,60208,252,1361990899810],   [2910094,"MIXWL_FRAUD_REP3",1,10848,1187373,2,1361930598923,1361930658999,11.136,6618,6.445056E7,1.6826836,0.5011574,0.7998753,5.688,0.59428877,60076,252,1361930719293],   [2910094,"MIXWL_FRAUD_REP3",1,11694,1192742,3,1361984499115,1361984633463,18.396,11659,1.02507008E8,1.5778369,0.5901137,0.7779842,8.496,0.6337791,134348,252,1361984694050],    [2910094,"MIXWL_FRAUD_REP3",1,11451,1191254,2,1361969461087,1361969522638,45.352,122927,4.2418176E7,0.36893442,0.4701258,0.79878175,14.328,2.7105088,61551,252,1361969593045],[2910152,"MIXWL_FRAUD_REP4",1,11460,1191171,3,1361968674747,1361968794980,17.46,11034,8.6539264E7,1.5823817,0.43330988,0.7296995,17.064,0.6319588,120233,252,1361968855039],  [2910152,"MIXWL_FRAUD_REP4",1,12057,1194985,3,1362005997136,1362006122167,19.484,14769,7.7956096E7,1.3192497,0.438075,0.75255316,4.536,0.7580066,125031,252,1362006185569], [2910152,"MIXWL_FRAUD_REP4",1,11733,1192836,3,1361985438055,1361985558380,13.456,8315,1.10685696E8,1.6182802,0.69767445,0.7807239,3.384,0.61793995,120325,252,1361985618429],   [2910144,"MIXWL_FRAUD_REP5",1,11553,1191538,3,1361972309722,1361972429880,18.348,12367,8.5497344E7,1.4836258,0.3357964,0.71630657,7.488,0.6740244,120158,252,1361972489926],    [2910144,"MIXWL_FRAUD_REP5",1,11544,1191485,2,1361971882326,1361971943639,26.676,49095,8.5080576E7,0.54335475,0.44968554,0.77598083,6.696,1.8404183,61313,252,1361972003698],   [2910144,"MIXWL_FRAUD_REP5",1,11886,1193550,5,1361992243375,1361992491215,43.328,120973,8.2739712E7,0.35816255,0.43262947,0.786601,5.832,2.7920282,247840,252,1361992551309],   [2910144,"MIXWL_FRAUD_REP5",1,11775,1192846,5,1361985438055,1361985678544,31.252,116095,7.2773632E7,0.26919332,0.24081723,0.7116269,8.784,3.7148023,240489,252,1361985741895],  [2910144,"MIXWL_FRAUD_REP5",1,10980,1187816,3,1361935053900,1361935176151,11.224,8870,9.8613248E7,1.265389,0.5210438,0.82825685,4.032,0.79027086,122251,252,1361935238924], [2910144,"MIXWL_FRAUD_REP5",1,11274,1189751,2,1361954317880,1361954378334,14.928,7436,9.875456E7,2.007531,0.30104464,0.7660386,6.768,0.49812433,60454,252,1361954438591],
+[2910144,"MIXWL_FRAUD_REP5",1,11211,1189355,2,1361950631577,1361950691921,12.748,8546,7.6545024E7,1.4916921,0.37421384,0.73502535,4.752,0.67037964,60344,252,1361950752045],    [2910144,"MIXWL_FRAUD_REP5",1,11349,1190257,3,1361959242330,1361959363943,19.088,11787,6.7311616E7,1.6194112,0.36243388,0.74531233,6.12,0.6175084,121613,252,1361959425562],    [2910144,"MIXWL_FRAUD_REP5",1,11721,1192511,3,1361982237948,1361982358538,17.084,10757,7.6395008E7,1.5881752,0.5002503,0.76027995,6.048,0.62965345,120590,252,1361982420669],   [2910100,"MIXWL_PROD_REP2",1,3108,1192475,2,1361981925116,1361981987859,36.512,10507,2.70771712E8,3.4750166,0.8350084,0.3957778,12.672,0.2877684,62743,252,1361982047943],  [2910111,"MIXWL_RET_REP1",1,14364,1192066,2,1361977562748,1361977623909,31.376,9713,2.3122432E7,3.23031,0.74505794,0.54033345,8.352,0.3095678,61161,252,1361977684446], [2910111,"MIXWL_RET_REP1",1,14526,1192863,2,1361985618429,1361985678544,28.496,7794,1.88151808E8,3.6561458,0.8275058,0.8381344,10.152,0.27351207,60115,252,1361985741895],  [2910111,"MIXWL_RET_REP1",1,14439,1192481,2,1361981987859,1361982047943,33.636,11244,1.180672E7,2.9914622,0.81461674,0.39832968,12.816,0.3342847,60084,252,1361982108348],[2910162,"MIXWL_STATS_REP4",1,28794,1198882,3,1362043403205,1362043531790,81.376,65510,7.730647E8,1.242192,0.58315086,0.8206472,29.88,0.8050285,128585,252,1362043592258],[2910168,"MIXWL_STATS_REP3",1,29613,1202635,3,1362079375531,1362079496051,82.14,66656,7.7325722E8,1.2322972,0.92664635,0.88700074,29.88,0.81149256,120520,252,1362079556679],[2910154,"MIXWL_RET_REP3",1,15144,1195916,2,1362015042272,1362015102735,30.576,7811,1.98796288E8,3.9144795,0.58126837,0.73926294,30.024,0.2554618,60463,252,1362015168943],[2910173,"MIXWL_STATS_REP5",1,29997,1202158,3,1362074741206,1362074862631,87.256,71949,7.5562854E8,1.2127479,0.5595238,0.7127491,30.096,0.8245737,121425,252,1362074922684],[2910148,"MIXWL_RET_REP5",1,16275,1200853,2,1362062596359,1362062662394,38.536,14585,1.98796288E8,2.6421666,0.4727868,0.7188649,30.456,0.37847728,66035,252,1362062722602],[2910159,"MIXWL_STATS_REP2",1,29130,1200890,2,1362062913842,1362062974105,83.064,65281,7.5562854E8,1.2724069,0.24652776,0.71379775,31.32,0.7859121,60263,252,1362063034155],[2910148,"MIXWL_RET_REP5",1,15207,1194955,2,1362005752779,1362005814292,31.788,8604,1.05178624E8,3.6945608,0.5508625,0.71772534,31.464,0.27066818,61513,252,1362005874846],[2910148,"MIXWL_RET_REP5",1,15795,1198117,2,1362035881420,1362035943318,39.792,15167,2.2018304E8,2.6235907,0.47876447,0.70577645,31.896,0.381157,61898,252,1362036003720],[2910111,"MIXWL_RET_REP1",1,15861,1199896,2,1362053101444,1362053165383,32.368,7315,1.98796288E8,4.4248805,0.55915177,0.7240618,32.04,0.22599481,63939,252,1362053240051],[2910168,"MIXWL_STATS_REP3",1,27873,1197136,2,1362026891782,1362026951964,82.776,66011,7.5562854E8,1.2539728,0.43677887,0.78137845,32.76,0.79746544,60182,252,1362027013048],[2910097,"MIXWL_PROD_REP5",1,3156,1196198,2,1362018190495,1362018250701,31.98,10257,2.70771712E8,3.1178708,0.5007278,0.7377261,32.832,0.3207317,60206,252,1362018311550],[2910168,"MIXWL_STATS_REP3",1,29655,1202774,2,1362080687858,1362080747915,81.736,65371,7.5562854E8,1.2503403,0.46309248,0.7455203,33.12,0.7997822,60057,252,1362080807975],[2910159,"MIXWL_STATS_REP2",1,27351,1195249,2,1362008632062,1362008694998,81.98,65095,7.5562854E8,1.2593901,0.36826068,0.71302485,33.768,0.79403514,62936,252,1362008756249],[2910168,"MIXWL_STATS_REP3",1,29256,1201456,2,1362068247602,1362068309818,69.604,61366,7.5562854E8,1.1342437,0.79190207,0.79865694,33.984,0.8816447,62216,252,1362068371671],[2910173,"MIXWL_STATS_REP5",1,28536,1197622,2,1362031430985,1362031491077,84.088,65571,7.5562854E8,1.2823962,0.4614051,0.7878686,35.28,0.7797902,60092,252,1362031552460]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ]
+
+
+var height = 600;
+var width = 600;
+var padding = 60;
+var numberFormat = d3.format(",f");
+
+//Log format function for setting logrithmic y axis
+function logFormat(d) {
+    var x = Math.log(d) / Math.log(10) + 1e-6;
+    return Math.abs(x - Math.floor(x)) < .2 ? numberFormat(d) : "";
+}
+
+//Prototype function for finding max value in array
+Array.prototype.max = function(){
+    return Math.max.apply( Math, this );
+};
+Array.prototype.compare = function(secondArr){
+     for(var i=0; i<this.length; i++)
+     {
+         if(this[i] != secondArr[i])
+             return false;
+     }
+     return true;
+};
+function findMaxIOVal(){
+    var myIOs = [];
+    for(var i=0; i < dataset.length; i++)
+    {
+        myIOs.push(dataset[i][9]);
+    }
+    return myIOs.max();
+}
+
+function findMaxCPUVal(){
+    var myIOs = [];
+    for(var i=0; i < dataset.length; i++)
+    {
+        myIOs.push(dataset[i][8]);
+    }
+    return myIOs.max();
+}
+//Create svg container/background
+var svg = d3.select("#main").append("svg")
+    .attr("class", "bg")
+    .attr("height", height)
+    .attr("width", width);
+    
+    svg.attr("class", "bg");
+
+//Create tooltip element
+var tooltip = d3.select("#main")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("z-index", "10")
+    .style("opacity", 0);
+
+var maxIOVal = findMaxIOVal();
+var maxCPUVal = findMaxCPUVal();
+
+//Drag event declaration
+var drag = d3.behavior.drag()
+    .origin(Object)
+    .on("drag", function(d){
+        if(Math.abs(d3.event.dx) > 3)    //helps prevent accidental circle removal
+        {
+            d3.select(this).transition()     //Remove dragged circle
+                .duration(300)
+                .attr("r", 0);
+        }
+    });
+
+//Declare Scales
+var xScale = d3.scale.linear()
+    .domain([1, maxIOVal + 10000])
+    .range([padding, width - padding]);
+var yScale = d3.scale.linear()
+    .domain([0, maxCPUVal + 10])
+    .range([height - padding, padding]);
+
+
+//Declare Axis
+var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .ticks(5)
+    .orient("bottom");
+var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient("left")
+    .ticks(5);
+ 
+//X-axis Grid Lines
+svg.selectAll("line.x")
+  .data(xScale.ticks(5))
+  .enter().append("line")
+  .attr("class", "x")
+  .attr("x1", xScale)
+  .attr("x2", xScale)
+  .attr("y1", padding)
+  .attr("y2", height-padding)
+  .style("stroke", "#ccc");    
+
+//Y-axis Grid Lines
+svg.selectAll("line.y")
+  .data(yScale.ticks(5))
+  .enter().append("line")
+  .attr("class", "y")
+  .attr("x1", padding)
+  .attr("x2", width-padding)
+  .attr("y1", yScale)
+  .attr("y2", yScale)
+  .style("stroke", "#ccc");
+
+//Create circles
+var circles = svg.selectAll("circle")
+    .data(dataset)
+    .enter()    
+    .append("circle")
+    .sort(function(a, b){    //Sort by radius size, helps reduce obstruction of circles
+        return d3.descending(a[14], b[14]);
+    })
+    .attr("cx", function(d){ //x axis is Req IO, col index 9
+        return xScale(d[9]);
+    })
+    .attr("cy", function(d){ //y axis is Req CPU, col index 8
+        return yScale(d[8]);
+    })
+    .attr("r", function(d){ //radius is based off Impact CPU, col 14
+        return d[14] * 1.5;
+    })
+    .attr("class", "dataCircle")
+    .attr("sessionid", function(d){    //Set session id for tooltip display
+        return d[0];
+    })    
+    .attr("username", function(d){    //Set username for tooltip display
+        return d[1];
+    })
+    .attr("reqcpu", function(d){   
+        return d[8];
+    })
+    .attr("reqio", function(d){  
+        return d[9];
+    })
+    .attr("pji", function(d){ 
+        return d[11];
+    })
+    .attr("cpuskew", function(d){ 
+        return d[12];
+    })
+    .attr("ioskew", function(d){ 
+        return d[13];
+    })
+    .attr("impact", function(d){ 
+        return d[14];
+    })
+    .attr("unnecio", function(d){ 
+        return d[15];
+    })
+    .attr("duration", function(d){ 
+        return d[16];
+    })
+    .attr("systemid", function(d){ 
+        return d[17];
+    })
+    .attr("timestamp", function(d){
+        return d[18];
+    })
+    .on("mousedown", mousedown)
+    .on("mouseover", mouseover)
+    .on("mousemove", mousemove)
+    .on("mouseout", mouseout)
+    .call(drag);
+
+function mousemove()
+{    //Move tooltip to mouse location
+    return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");                            
+}
+
+
+function mouseout()
+{
+    d3.select(this) 
+        .attr("class", "dataCircle"); //Recolor circle steel blue
+    
+    tooltip.transition()
+        .delay(100)
+        .style("opacity", 0)    //Make tooltip invisible
+    
+    svg.selectAll("circle")
+    .transition()
+    .style("opacity", 1);       //
+}
+
+//Mouseover function for circles, displays shortened tooltip and causes other circles to become opaque
+function mouseover()
+{
+    var myCircle = d3.select(this);
+    
+    d3.select(this).attr("class", "dataCircleSelected");    //Color circle green
+    
+    tooltip.html(    //Populate tooltip text
+        "Username: " + d3.select(this).attr("username") + "<br/>" +
+        "Session ID: " + d3.select(this).attr("sessionid") + "<br/>" + 
+        "Impact CPU: " + d3.select(this).attr("impact")            
+    )
+    .transition()
+    .duration(250)
+    .style("opacity", .7);
+    
+    //After 1000ms, make other circle opaque
+    svg.selectAll("circle")
+    .filter(function(d, i){    //return every other circle
+        return !d.compare(myCircle[0][0].__data__);
+    })
+    .transition().delay(1000)
+    .style("opacity", .2);
+    
+}
+
+function mousedown()
+{
+    tooltip.transition() 
+        .duration(200)
+        .style("opacity", 1);
+    tooltip.html(
+        "Username: " + d3.select(this).attr("username") + "<br/>" +
+        "Session ID: " + d3.select(this).attr("sessionid") + "<br/>" + 
+        "Impact CPU: " + d3.select(this).attr("impact") + "<br/>" +
+        "Request CPU: " + d3.select(this).attr("reqcpu") + "<br/>" + 
+        "Request IO: " + d3.select(this).attr("reqio") + "<br/>" +
+        "PJI: " + d3.select(this).attr("pji") + "<br/>" +
+        "CPU Skew: " + d3.select(this).attr("cpuskew") + "<br/>" +
+        "IO Skew: " + d3.select(this).attr("ioskew") + "<br/>" +
+        "Duration: " + d3.select(this).attr("duration") + "<br/>" +
+        "Timestamp: " + d3.select(this).attr("timestamp") + "<br/>" +           
+        "System ID: " + d3.select(this).attr("systemid")
+    )
+}
+
+/*
+//Create left cover up rect, to ensure no circles spill out of graph. Better way to do this?
+svg.append("rect")
+    .attr("fill", "red")
+    .attr("width", padding)
+    .attr("height", height)
+    .attr("class", "coverUpRect")
+
+    .attr("border-style", "none");
+
+//Bottom 'cover up'
+svg.append("rect")
+    .attr("x", padding)
+    .attr("y", height-padding)
+    .attr("width", width)
+    .attr("height", padding)
+    .attr("class", "coverUpRect")
+    .attr("fill", "aliceblue")
+    .attr("border-style", "none");
+*/
+    
+//Create X-axis
+svg.append("g")
+    .attr("class", "xaxis axis") //Assign "axis" class
+    .attr("transform", "translate(0," + (height - padding) + ")")
+    .call(xAxis);
+
+//Create Y axis
+svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(" + padding + ",0)")
+    .call(yAxis);
+
+//Create x axis title
+svg.append("text")
+    .attr("text-anchor", "middle")  
+    .attr("transform", "translate("+ (width/2) +","+(height-(padding/3))+")")  // center below axis
+    .text("Request I/O");
+
+//Create y axis title
+svg.append("text")
+    .attr("text-anchor", "middle")
+    .attr("transform", "translate("+ (padding/2) +","+(height/2)+")rotate(-90)")
+    .text("Request CPU");
+
+</script>
